@@ -1,8 +1,10 @@
 use std::{collections::BTreeSet, num::NonZero, sync::LazyLock};
 
 use estranged_types::{
-    Marker, RequestResult, Subscription, SubscriptionRequest, UpdateType, Updates,
+    Marker, RequestResult, Subscription, SubscriptionRequest, Update, UpdateType, Updates,
 };
+use futures_util::Stream;
+use genawaiter_try_stream::try_stream;
 use governor::{
     Quota, RateLimiter,
     clock::DefaultClock,
@@ -110,5 +112,22 @@ impl MaxApi {
                 .append_pair("types", &types.iter().join(","));
         }
         self.start_url(Method::GET, url).pull_json().await
+    }
+
+    pub fn update_stream(
+        &self,
+        timeout: Option<u8>,
+        types: &BTreeSet<UpdateType>,
+    ) -> impl Stream<Item = Result<Update>> {
+        try_stream(async move |co| {
+            let mut m = None;
+            loop {
+                let Updates { updates, marker } = self.updates(timeout, m, types).await?;
+                for update in updates {
+                    co.yield_(update).await;
+                }
+                m = marker;
+            }
+        })
     }
 }

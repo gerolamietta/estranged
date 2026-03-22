@@ -10,11 +10,14 @@ publish.workspace = true
 [dependencies]
 estranged-types.workspace = true
 
+futures-util.workspace = true
+genawaiter-try-stream.workspace = true
 governor.workspace = true
 itertools.workspace = true
 reqwest.workspace = true
 serde.workspace = true
 thiserror.workspace = true
+tracing.workspace = true
 
 [dev-dependencies]
 clap.workspace = true
