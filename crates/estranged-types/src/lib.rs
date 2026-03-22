@@ -7,6 +7,7 @@ use std::{
 use chrono::{DateTime, Utc};
 use garde::{Unvalidated, Valid, Validate};
 use langtag::LangTagBuf;
+use monostate::MustBe;
 use serde::{Deserialize, Serialize};
 use strum::EnumDiscriminants;
 use url::Url;
@@ -17,23 +18,25 @@ pub enum Error {
     Overflow,
     #[error(transparent)]
     Invalid(#[from] garde::Report),
+    #[error("{message}")]
+    Response { message: String },
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-#[derive(Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub struct UserId(i64);
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ChatId(i64);
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Mid(String);
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Seq(i64);
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Count(i32);
 
 impl Count {
@@ -42,10 +45,19 @@ impl Count {
     }
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Marker(i64);
+
+impl Display for Marker {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
 // #[derive(Serialize, Deserialize)]
 // pub struct TimeS(#[serde(with = "chrono::serde::ts_seconds")] DateTime<Utc>);
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TimeMs(#[serde(with = "chrono::serde::ts_milliseconds")] DateTime<Utc>);
 
 impl TimeMs {
@@ -54,7 +66,7 @@ impl TimeMs {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct User {
     pub user_id: UserId,
     pub first_name: String,
@@ -77,10 +89,11 @@ pub struct UserWithPhoto {
     pub full_avatar_url: Option<Url>,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ChatType {
     Chat,
+    Dialog,
 }
 
 #[derive(Deserialize)]
@@ -120,35 +133,35 @@ pub struct Chat {
     pub pinned_message: Option<Message>,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct Recipient {
     pub chat_id: Option<ChatId>,
     pub chat_type: ChatType,
     pub user_id: Option<UserId>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum MessageLinkType {
     Forward,
     Reply,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 #[serde(rename_all = "snake_case", tag = "type")]
 pub enum Attachment {
     #[serde(other)]
     Unknown,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 #[serde(rename_all = "snake_case", tag = "type")]
 pub enum MarkupElement {
     #[serde(other)]
     Unknown,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct MessageBody {
     pub mid: Mid,
     pub seq: Seq,
@@ -159,7 +172,7 @@ pub struct MessageBody {
     pub markup: Option<Vec<MarkupElement>>,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct LinkedMessage {
     pub r#type: MessageLinkType,
     #[serde(default)]
@@ -169,12 +182,12 @@ pub struct LinkedMessage {
     pub message: MessageBody,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct MessageStat {
     pub views: Count,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct Message {
     #[serde(default)]
     pub sender: Option<User>,
@@ -238,7 +251,7 @@ pub struct NewMessageBody {
     pub format: Option<TextFormat>,
 }
 
-#[derive(Deserialize, EnumDiscriminants)]
+#[derive(Debug, Deserialize, EnumDiscriminants)]
 #[serde(rename_all = "snake_case", tag = "update_type")]
 #[strum(serialize_all = "snake_case")]
 #[strum_discriminants(strum(serialize_all = "snake_case"))]
@@ -269,7 +282,7 @@ pub enum UpdateKind {
     Unknown,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct Update {
     pub timestamp: TimeMs,
     #[serde(flatten)]
@@ -344,4 +357,30 @@ pub struct SubscriptionRequest {
     pub update_types: Option<BTreeSet<UpdateType>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub secret: Option<Secret>,
+}
+
+#[derive(Deserialize)]
+pub enum RequestResult {
+    Ok {
+        success: MustBe!(true),
+    },
+    Err {
+        success: MustBe!(false),
+        message: String,
+    },
+}
+
+impl RequestResult {
+    pub fn into_result(self) -> Result<()> {
+        match self {
+            Self::Ok { .. } => Ok(()),
+            Self::Err { message, .. } => Err(Error::Response { message }),
+        }
+    }
+}
+
+#[derive(Deserialize)]
+pub struct Updates {
+    pub updates: Vec<Update>,
+    pub marker: Option<Marker>,
 }

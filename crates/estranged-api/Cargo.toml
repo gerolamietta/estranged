@@ -8,3 +8,15 @@ rust-version.workspace = true
 publish.workspace = true
 
 [dependencies]
+estranged-types.workspace = true
+
+governor.workspace = true
+itertools.workspace = true
+reqwest.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+clap.workspace = true
+dotenvy.workspace = true
+tokio = { workspace = true, features = ["full"] }
