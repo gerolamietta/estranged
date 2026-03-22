@@ -1,7 +1,8 @@
 use std::{collections::BTreeSet, num::NonZero, sync::LazyLock};
 
 use estranged_types::{
-    Marker, RequestResult, Subscription, SubscriptionRequest, Update, UpdateType, Updates,
+    ChatId, Marker, NewMessageBody, RequestResult, SendResult, Subscription, SubscriptionRequest,
+    Update, UpdateType, Updates, UserId,
 };
 use futures_util::Stream;
 use genawaiter_try_stream::try_stream;
@@ -129,5 +130,32 @@ impl MaxApi {
                 m = marker;
             }
         })
+    }
+
+    pub async fn send(
+        &self,
+        user_id: Option<UserId>,
+        chat_id: Option<ChatId>,
+        disable_link_preview: Option<bool>,
+        message: &NewMessageBody,
+    ) -> Result<SendResult> {
+        let mut url = self.base_url();
+        url.set_path("/messages");
+        if let Some(user_id) = user_id {
+            url.query_pairs_mut()
+                .append_pair("user_id", &user_id.to_string());
+        }
+        if let Some(chat_id) = chat_id {
+            url.query_pairs_mut()
+                .append_pair("chat_id", &chat_id.to_string());
+        }
+        if let Some(disable_link_preview) = disable_link_preview {
+            url.query_pairs_mut()
+                .append_pair("disable_link_preview", &disable_link_preview.to_string());
+        }
+        self.start_url(Method::POST, url)
+            .json(message)
+            .pull_json()
+            .await
     }
 }

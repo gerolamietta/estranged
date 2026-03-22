@@ -27,8 +27,20 @@ pub type Result<T> = std::result::Result<T, Error>;
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub struct UserId(i64);
 
+impl Display for UserId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ChatId(i64);
+
+impl Display for ChatId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Mid(String);
@@ -229,8 +241,13 @@ pub struct NewMessageLink {
     pub mid: Mid,
 }
 
-fn _notify_default() -> bool {
-    true
+#[derive(Serialize)]
+pub struct Notify(bool);
+
+impl Default for Notify {
+    fn default() -> Self {
+        Self(true)
+    }
 }
 
 #[derive(Serialize, Deserialize)]
@@ -240,13 +257,13 @@ pub enum TextFormat {
     Html,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Default)]
 pub struct NewMessageBody {
     pub text: Option<String>,
     pub attachments: Option<Vec<AttachmentRequest>>,
     pub link: Option<NewMessageLink>,
-    #[serde(default = "_notify_default")]
-    pub notify: bool,
+    #[serde(default)]
+    pub notify: Notify,
     #[serde(default)]
     pub format: Option<TextFormat>,
 }
@@ -383,4 +400,9 @@ impl RequestResult {
 pub struct Updates {
     pub updates: Vec<Update>,
     pub marker: Option<Marker>,
+}
+
+#[derive(Deserialize)]
+pub struct SendResult {
+    pub message: Message,
 }
