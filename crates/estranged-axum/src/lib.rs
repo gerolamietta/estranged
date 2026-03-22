@@ -22,7 +22,7 @@ async fn authify(
     }
 }
 
-pub fn router<
+pub fn webhook<
     S: 'static + Send + Sync + Clone,
     F: 'static + Send + Sync + Clone + Fn(Update) -> Fut,
     Fut: Send + Future<Output = ()>,
