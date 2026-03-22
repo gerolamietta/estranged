@@ -1,0 +1,35 @@
+[workspace]
+members = [
+    "crates/estranged-api",
+    "crates/estranged-axum",
+    "crates/estranged-headers",
+    "crates/estranged-types",
+]
+resolver = "3"
+
+[workspace.package]
+authors = ["Clementina Cardano <gerolamietta@gmail.com>"]
+license = "MIT OR Apache-2.0"
+edition = "2024"
+rust-version = "1.94"
+publish = false
+
+[workspace.dependencies]
+estranged-api.path = "crates/estranged-api"
+estranged-axum.path = "crates/estranged-axum"
+estranged-headers.path = "crates/estranged-headers"
+estranged-types.path = "crates/estranged-types"
+
+axum = { version = "0.8.8", features = ["tracing"] }
+axum-extra = { version = "0.12.5", features = ["typed-header"] }
+chrono = { version = "0.4.44", features = ["serde"] }
+garde = { version = "0.22.1", features = ["derive", "regex", "serde"] }
+headers = "0.4.1"
+http = "1.4.0"
+itertools = "0.14.0"
+langtag = { version = "1.1.0", features = ["serde"] }
+serde = { version = "1.0.228", features = ["derive", "rc"] }
+strum = { version = "0.28.0", features = ["derive"] }
+thiserror = "2.0.18"
+tracing = "0.1.44"
+url = { version = "2.5.8", features = ["serde"] }

@@ -1,0 +1,17 @@
+[package]
+name = "estranged-types"
+version = "0.1.0"
+authors.workspace = true
+license.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+chrono.workspace = true
+garde.workspace = true
+langtag.workspace = true
+serde.workspace = true
+strum.workspace = true
+thiserror.workspace = true
+url.workspace = true

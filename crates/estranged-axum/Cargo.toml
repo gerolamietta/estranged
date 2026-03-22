@@ -1,0 +1,15 @@
+[package]
+name = "estranged-axum"
+version = "0.1.0"
+authors.workspace = true
+license.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+estranged-headers.workspace = true
+estranged-types.workspace = true
+
+axum.workspace = true
+axum-extra.workspace = true
