@@ -62,7 +62,7 @@ impl Display for ChatId {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Mid(String);
 
 impl Display for Mid {
