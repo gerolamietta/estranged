@@ -22,6 +22,8 @@ pub enum Error {
     Reqwest(#[from] reqwest::Error),
     #[error(transparent)]
     Types(#[from] estranged_types::Error),
+    #[error(transparent)]
+    Acquire(#[from] tokio::sync::AcquireError),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -185,6 +187,8 @@ impl MaxApi {
     }
 
     pub async fn upload(&self, r#type: UploadType, body: reqwest::Body) -> Result<UploadedInfo> {
+        static SEMAPHORE: tokio::sync::Semaphore = tokio::sync::Semaphore::const_new(1);
+        let _guard = SEMAPHORE.acquire().await?;
         let mut url = self.base_url();
         url.set_path("/uploads");
         url.query_pairs_mut()
