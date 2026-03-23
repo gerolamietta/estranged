@@ -101,7 +101,7 @@ pub struct UserWithPhoto {
     pub full_avatar_url: Option<Url>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ChatType {
     Chat,
