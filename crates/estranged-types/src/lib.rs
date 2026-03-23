@@ -445,3 +445,12 @@ pub struct Updates {
 pub struct SendResult {
     pub message: Message,
 }
+
+#[derive(Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum UploadType {
+    Image,
+    Video,
+    Audio,
+    File,
+}
