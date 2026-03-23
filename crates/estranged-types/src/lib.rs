@@ -249,15 +249,18 @@ pub struct AttachmentPhotos {
 }
 
 #[derive(Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum PhotoAttachmentRequestPayload {
+    Url(Url),
+    Token(AttachmentToken),
+    Photos(AttachmentPhotos),
+}
+
+#[derive(Serialize)]
 #[serde(rename_all = "snake_case", tag = "type")]
 pub enum AttachmentRequest {
     Image {
-        #[serde(default)]
-        url: Option<Url>,
-        #[serde(default)]
-        token: Option<AttachmentToken>,
-        #[serde(default)]
-        photos: Option<AttachmentPhotos>,
+        payload: PhotoAttachmentRequestPayload,
     },
 }
 
