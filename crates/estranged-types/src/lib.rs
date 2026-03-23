@@ -257,7 +257,7 @@ pub enum PhotoAttachmentRequestPayload {
     Photos(AttachmentPhotos),
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct UploadedInfo {
     pub token: AttachmentToken,
 }
@@ -446,11 +446,17 @@ pub struct SendResult {
     pub message: Message,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, strum::Display)]
 #[serde(rename_all = "snake_case")]
+#[strum(serialize_all = "snake_case")]
 pub enum UploadType {
     Image,
     Video,
     Audio,
     File,
+}
+
+#[derive(Deserialize)]
+pub struct UploadsResponse {
+    pub url: Url,
 }

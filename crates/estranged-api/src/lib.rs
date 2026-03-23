@@ -2,7 +2,8 @@ use std::{collections::BTreeSet, num::NonZero, sync::LazyLock};
 
 use estranged_types::{
     ChatId, Marker, Mid, NewMessageBody, Recipient, RequestResult, SendResult, Subscription,
-    SubscriptionRequest, Update, UpdateType, Updates, UserId,
+    SubscriptionRequest, Update, UpdateType, Updates, UploadType, UploadedInfo, UploadsResponse,
+    UserId,
 };
 use futures_util::Stream;
 use genawaiter_try_stream::try_stream;
@@ -181,5 +182,19 @@ impl MaxApi {
             .pull_result()
             .await?;
         Ok(())
+    }
+
+    pub async fn upload(&self, r#type: UploadType, body: reqwest::Body) -> Result<UploadedInfo> {
+        let mut url = self.base_url();
+        url.set_path("/uploads");
+        url.query_pairs_mut()
+            .append_pair("type", &r#type.to_string());
+        let UploadsResponse { url } = self.start_url(Method::POST, url).pull_json().await?;
+        self.client
+            .post(url)
+            .header("content-type", "application/json")
+            .body(body)
+            .pull_json()
+            .await
     }
 }
