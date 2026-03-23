@@ -1,11 +1,12 @@
 use std::{collections::BTreeSet, num::NonZero, sync::LazyLock};
 
+use bytes::Bytes;
 use estranged_types::{
     ChatId, Marker, Mid, NewMessageBody, Recipient, RequestResult, SendResult, Subscription,
     SubscriptionRequest, Update, UpdateType, Updates, UploadType, UploadedInfo, UploadsResponse,
     UserId,
 };
-use futures_util::Stream;
+use futures_util::{Stream, TryStream};
 use genawaiter_try_stream::try_stream;
 use governor::{
     Quota, RateLimiter,
@@ -186,7 +187,16 @@ impl MaxApi {
         Ok(())
     }
 
-    pub async fn upload(&self, r#type: UploadType, body: reqwest::Body) -> Result<UploadedInfo> {
+    pub async fn upload<T>(
+        &self,
+        r#type: UploadType,
+        stream: impl 'static
+        + Send
+        + TryStream<Ok = T, Error: Into<Box<dyn Send + Sync + std::error::Error>>>,
+    ) -> Result<UploadedInfo>
+    where
+        Bytes: From<T>,
+    {
         static SEMAPHORE: tokio::sync::Semaphore = tokio::sync::Semaphore::const_new(1);
         let _guard = SEMAPHORE.acquire().await?;
         let mut url = self.base_url();
@@ -197,7 +207,7 @@ impl MaxApi {
         self.client
             .post(url)
             .header("content-type", "application/json")
-            .body(body)
+            .body(reqwest::Body::wrap_stream(stream))
             .pull_json()
             .await
     }

@@ -10,6 +10,7 @@ publish.workspace = true
 [dependencies]
 estranged-types.workspace = true
 
+bytes.workspace = true
 futures-util.workspace = true
 genawaiter-try-stream.workspace = true
 governor.workspace = true
