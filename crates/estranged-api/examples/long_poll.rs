@@ -3,7 +3,7 @@ use std::collections::BTreeSet;
 use clap::Parser;
 use estranged_api::MaxApi;
 use estranged_types::{
-    Message, MessageBody, NewMessageBody, Recipient, SendResult, UpdateKind, UpdateType, User,
+    Message, MessageBody, NewMessageBody, SendResult, UpdateKind, UpdateType, User,
 };
 use futures_util::TryStreamExt;
 
@@ -26,19 +26,15 @@ async fn main() -> estranged_api::Result<()> {
                 && let Message {
                     body: MessageBody { text, .. },
                     sender: Some(User { is_bot: false, .. }),
-                    recipient:
-                        Recipient {
-                            chat_id, user_id, ..
-                        },
+                    recipient,
                     ..
                 } = *message
                 && let Some(text) = text
                 && text == "/echo"
             {
                 let SendResult { message } = api
-                    .send(
-                        user_id,
-                        chat_id,
+                    .reply(
+                        &recipient,
                         None,
                         &NewMessageBody {
                             text: Some("echo".into()),

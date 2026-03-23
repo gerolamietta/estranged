@@ -1,8 +1,8 @@
 use std::{collections::BTreeSet, num::NonZero, sync::LazyLock};
 
 use estranged_types::{
-    ChatId, Marker, NewMessageBody, RequestResult, SendResult, Subscription, SubscriptionRequest,
-    Update, UpdateType, Updates, UserId,
+    ChatId, Marker, NewMessageBody, Recipient, RequestResult, SendResult, Subscription,
+    SubscriptionRequest, Update, UpdateType, Updates, UserId,
 };
 use futures_util::Stream;
 use genawaiter_try_stream::try_stream;
@@ -156,6 +156,18 @@ impl MaxApi {
         self.start_url(Method::POST, url)
             .json(message)
             .pull_json()
+            .await
+    }
+
+    pub async fn reply(
+        &self,
+        Recipient {
+            chat_id, user_id, ..
+        }: &Recipient,
+        disable_link_preview: Option<bool>,
+        message: &NewMessageBody,
+    ) -> Result<SendResult> {
+        self.send(*user_id, *chat_id, disable_link_preview, message)
             .await
     }
 }
