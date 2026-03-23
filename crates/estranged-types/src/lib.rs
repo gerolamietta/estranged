@@ -131,6 +131,7 @@ pub struct UserWithPhoto {
 #[serde(rename_all = "snake_case")]
 pub enum ChatType {
     Chat,
+    #[serde(alias = "ialog")]
     Dialog,
 }
 
