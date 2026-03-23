@@ -171,14 +171,15 @@ impl MaxApi {
             .await
     }
 
-    pub async fn edit(&self, message_id: Mid, message: &NewMessageBody) -> Result<SendResult> {
+    pub async fn edit(&self, message_id: Mid, message: &NewMessageBody) -> Result<()> {
         let mut url = self.base_url();
         url.set_path("/messages");
         url.query_pairs_mut()
             .append_pair("message_id", &message_id.to_string());
         self.start_url(Method::PUT, url)
             .json(message)
-            .pull_json()
-            .await
+            .pull_result()
+            .await?;
+        Ok(())
     }
 }
