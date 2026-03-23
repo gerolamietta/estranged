@@ -43,7 +43,7 @@ impl Display for UserId {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ChatId(i64);
 
 impl ChatId {
