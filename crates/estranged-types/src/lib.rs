@@ -406,6 +406,7 @@ pub struct SubscriptionRequest {
 }
 
 #[derive(Deserialize)]
+#[serde(untagged)]
 pub enum RequestResult {
     Ok {
         success: MustBe!(true),
