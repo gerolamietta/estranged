@@ -65,6 +65,12 @@ impl Display for ChatId {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Mid(String);
 
+impl Display for Mid {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Seq(i64);
 

@@ -1,7 +1,7 @@
 use std::{collections::BTreeSet, num::NonZero, sync::LazyLock};
 
 use estranged_types::{
-    ChatId, Marker, NewMessageBody, Recipient, RequestResult, SendResult, Subscription,
+    ChatId, Marker, Mid, NewMessageBody, Recipient, RequestResult, SendResult, Subscription,
     SubscriptionRequest, Update, UpdateType, Updates, UserId,
 };
 use futures_util::Stream;
@@ -168,6 +168,17 @@ impl MaxApi {
         message: &NewMessageBody,
     ) -> Result<SendResult> {
         self.send(*user_id, *chat_id, disable_link_preview, message)
+            .await
+    }
+
+    pub async fn edit(&self, message_id: Mid, message: &NewMessageBody) -> Result<SendResult> {
+        let mut url = self.base_url();
+        url.set_path("/messages");
+        url.query_pairs_mut()
+            .append_pair("message_id", &message_id.to_string());
+        self.start_url(Method::PUT, url)
+            .json(message)
+            .pull_json()
             .await
     }
 }
