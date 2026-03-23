@@ -241,7 +241,7 @@ pub struct Message {
     pub url: Option<Url>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct AttachmentToken(String);
 
 #[derive(Serialize)]
