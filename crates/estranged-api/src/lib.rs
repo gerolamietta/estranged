@@ -219,24 +219,38 @@ impl MaxApi {
         url.set_path("/uploads");
         url.query_pairs_mut()
             .append_pair("type", &r#type.to_string());
-        let UploadsResponse { url } = self
+        let UploadsResponse { url, token } = self
             .start_url(Method::POST, url)
             .pull_json()
             .await
             .inspect_err(|e| tracing::error!("failed to start uploading: {e}"))?;
         tracing::info!("uploading to {url}");
-        self.client
-            .post(url)
-            .multipart(
-                Form::new().part(
-                    "data",
-                    Part::stream_with_length(Body::wrap_stream(stream), length)
-                        .file_name(file_name.to_owned())
-                        .mime_str(mime)?,
-                ),
-            )
-            .pull_json()
-            .await
-            .inspect_err(|e| tracing::error!("failed to finish uploading: {e}"))
+        let builder = self.client.post(url).multipart(
+            Form::new().part(
+                "data",
+                Part::stream_with_length(Body::wrap_stream(stream), length)
+                    .file_name(file_name.to_owned())
+                    .mime_str(mime)?,
+            ),
+        );
+        if let Some(token) = token {
+            let response = builder
+                .send()
+                .await
+                .inspect_err(|e| tracing::error!("failed to finish uploading: {e}"))?;
+            let status = response.status();
+            if !status.is_success() {
+                return Err(Error::Status {
+                    status,
+                    text: response.text().await?,
+                });
+            }
+            Ok(UploadedInfo { token })
+        } else {
+            builder
+                .pull_json()
+                .await
+                .inspect_err(|e| tracing::error!("failed to finish uploading: {e}"))
+        }
     }
 }

@@ -459,4 +459,6 @@ pub enum UploadType {
 #[derive(Deserialize)]
 pub struct UploadsResponse {
     pub url: Url,
+    #[serde(default)]
+    pub token: Option<AttachmentToken>,
 }
