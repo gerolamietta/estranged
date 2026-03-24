@@ -203,6 +203,7 @@ impl MaxApi {
     pub async fn upload<T>(
         &self,
         r#type: UploadType,
+        length: u64,
         file_name: &str,
         mime: &str,
         stream: impl 'static
@@ -230,7 +231,7 @@ impl MaxApi {
             .multipart(
                 Form::new().part(
                     "data",
-                    Part::stream(Body::wrap_stream(stream))
+                    Part::stream_with_length(Body::wrap_stream(stream), length)
                         .file_name(file_name.to_owned())
                         .mime_str(mime)?,
                 ),
