@@ -54,14 +54,12 @@ impl BuilderExt for RequestBuilder {
         LIMITER.until_ready().await;
         let response = self.header("accept", "application/json").send().await?;
         let status = response.status();
-        if !status.is_success() {
+        if !status.is_success() || response.headers().get("content-type").is_none() {
             return Err(Error::Status {
                 status,
                 text: response.text().await?,
             });
         }
-        let ct = response.headers().get("content-type");
-        tracing::info!("{ct:?}");
         Ok(response.json().await?)
     }
 }
