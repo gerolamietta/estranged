@@ -203,12 +203,17 @@ impl MaxApi {
         url.set_path("/uploads");
         url.query_pairs_mut()
             .append_pair("type", &r#type.to_string());
-        let UploadsResponse { url } = self.start_url(Method::POST, url).pull_json().await?;
+        let UploadsResponse { url } = self
+            .start_url(Method::POST, url)
+            .pull_json()
+            .await
+            .inspect_err(|e| tracing::error!("failed to start uploading: {e}"))?;
         self.client
             .post(url)
             .header("content-type", "application/json")
             .body(reqwest::Body::wrap_stream(stream))
             .pull_json()
             .await
+            .inspect_err(|e| tracing::error!("failed to finish uploading: {e}"))
     }
 }
