@@ -14,7 +14,7 @@ use governor::{
     state::{InMemoryState, NotKeyed},
 };
 use itertools::Itertools;
-use reqwest::{Client, Method, RequestBuilder, Url};
+use reqwest::{Client, Method, RequestBuilder, StatusCode, Url};
 use serde::de::DeserializeOwned;
 
 #[derive(Debug, thiserror::Error)]
@@ -25,6 +25,8 @@ pub enum Error {
     Types(#[from] estranged_types::Error),
     #[error(transparent)]
     Acquire(#[from] tokio::sync::AcquireError),
+    #[error("{status}: {text}")]
+    Status { status: StatusCode, text: String },
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -47,7 +49,15 @@ impl BuilderExt for RequestBuilder {
         static LIMITER: LazyLock<RateLimiter<NotKeyed, InMemoryState, DefaultClock>> =
             LazyLock::new(|| RateLimiter::direct(Quota::per_second(NonZero::new(30).unwrap())));
         LIMITER.until_ready().await;
-        Ok(self.send().await?.json().await?)
+        let response = self.send().await?;
+        let status = response.status();
+        if !status.is_success() {
+            return Err(Error::Status {
+                status,
+                text: response.text().await?,
+            });
+        }
+        Ok(response.json().await?)
     }
 }
 
