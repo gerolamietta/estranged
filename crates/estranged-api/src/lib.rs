@@ -204,6 +204,7 @@ impl MaxApi {
         &self,
         r#type: UploadType,
         file_name: &str,
+        mime: &str,
         stream: impl 'static
         + Send
         + TryStream<Ok = T, Error: Into<Box<dyn Send + Sync + std::error::Error>>>,
@@ -231,7 +232,7 @@ impl MaxApi {
                     "data",
                     Part::stream(Body::wrap_stream(stream))
                         .file_name(file_name.to_owned())
-                        .mime_str("video/mp4")?,
+                        .mime_str(mime)?,
                 ),
             )
             .pull_json()
