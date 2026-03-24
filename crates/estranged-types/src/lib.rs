@@ -129,6 +129,7 @@ pub struct UserWithPhoto {
 
 #[derive(Debug, Serialize, Deserialize, strum::Display, strum::EnumString)]
 #[serde(rename_all = "snake_case")]
+#[strum(serialize_all = "snake_case")]
 pub enum ChatType {
     #[serde(alias = "hat")]
     Chat,
