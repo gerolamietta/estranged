@@ -220,7 +220,7 @@ impl MaxApi {
             .inspect_err(|e| tracing::error!("failed to start uploading: {e}"))?;
         self.client
             .post(url)
-            .header("content-type", "application/json")
+            .header("content-type", "multipart/form-data")
             .body(reqwest::Body::wrap_stream(stream))
             .pull_json()
             .await
