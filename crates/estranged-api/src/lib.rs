@@ -224,7 +224,6 @@ impl MaxApi {
             .pull_json()
             .await
             .inspect_err(|e| tracing::error!("failed to start uploading: {e}"))?;
-        tracing::info!("uploading to {url}");
         let builder = self.client.post(url).multipart(
             Form::new().part(
                 "data",
