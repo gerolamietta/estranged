@@ -60,6 +60,8 @@ impl BuilderExt for RequestBuilder {
                 text: response.text().await?,
             });
         }
+        let ct = response.headers().get("content-type");
+        tracing::info!("{ct:?}");
         Ok(response.json().await?)
     }
 }
