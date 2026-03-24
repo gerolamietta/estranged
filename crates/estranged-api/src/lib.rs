@@ -227,7 +227,6 @@ impl MaxApi {
         tracing::info!("uploading to {url}");
         self.client
             .post(url)
-            .header("content-type", "multipart/form-data")
             .multipart(
                 Form::new().part(
                     "data",
