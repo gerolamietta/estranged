@@ -14,7 +14,10 @@ use governor::{
     state::{InMemoryState, NotKeyed},
 };
 use itertools::Itertools;
-use reqwest::{Client, Method, RequestBuilder, StatusCode, Url};
+use reqwest::{
+    Body, Client, Method, RequestBuilder, StatusCode, Url,
+    multipart::{Form, Part},
+};
 use serde::de::DeserializeOwned;
 
 #[derive(Debug, thiserror::Error)]
@@ -222,7 +225,7 @@ impl MaxApi {
         self.client
             .post(url)
             .header("content-type", "multipart/form-data")
-            .body(reqwest::Body::wrap_stream(stream))
+            .multipart(Form::new().part("data", Part::stream(Body::wrap_stream(stream))))
             .pull_json()
             .await
             .inspect_err(|e| tracing::error!("failed to finish uploading: {e}"))
