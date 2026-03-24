@@ -203,6 +203,7 @@ impl MaxApi {
     pub async fn upload<T>(
         &self,
         r#type: UploadType,
+        file_name: &str,
         stream: impl 'static
         + Send
         + TryStream<Ok = T, Error: Into<Box<dyn Send + Sync + std::error::Error>>>,
@@ -225,7 +226,14 @@ impl MaxApi {
         self.client
             .post(url)
             .header("content-type", "multipart/form-data")
-            .multipart(Form::new().part("data", Part::stream(Body::wrap_stream(stream))))
+            .multipart(
+                Form::new().part(
+                    "data",
+                    Part::stream(Body::wrap_stream(stream))
+                        .file_name(file_name.to_owned())
+                        .mime_str("video/mp4")?,
+                ),
+            )
             .pull_json()
             .await
             .inspect_err(|e| tracing::error!("failed to finish uploading: {e}"))
