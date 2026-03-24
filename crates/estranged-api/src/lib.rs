@@ -52,7 +52,7 @@ impl BuilderExt for RequestBuilder {
         static LIMITER: LazyLock<RateLimiter<NotKeyed, InMemoryState, DefaultClock>> =
             LazyLock::new(|| RateLimiter::direct(Quota::per_second(NonZero::new(30).unwrap())));
         LIMITER.until_ready().await;
-        let response = self.send().await?;
+        let response = self.header("accept", "application/json").send().await?;
         let status = response.status();
         if !status.is_success() {
             return Err(Error::Status {
